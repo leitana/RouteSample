@@ -13,6 +13,7 @@ import com.boco.bmdp.core.pojo.common.CommMsgResponse;
 import com.boco.routesample.entity.TrackRequest;
 import com.boco.routesample.service.RetrofitCreateHelper;
 import com.boco.routesample.service.ServiceInterface;
+import com.jaredrummler.materialspinner.MaterialSpinner;
 
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -29,6 +30,8 @@ public class HistoryRouteActivity extends AppCompatActivity {
     private MapView mMapView;
     private HistoryLocationListener myListener;
     private ImageView iv_locate;
+    private MaterialSpinner standardSpinner;
+    private MaterialSpinner distanceSpinner;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -36,6 +39,8 @@ public class HistoryRouteActivity extends AppCompatActivity {
         setContentView(R.layout.activity_history);
         mMapView = (MapView) findViewById(R.id.bmapView);
         iv_locate = (ImageView) findViewById(R.id.iv_locate);
+        standardSpinner = (MaterialSpinner) findViewById(R.id.sp_standard);
+        distanceSpinner = (MaterialSpinner) findViewById(R.id.sp_distance);
         initMap();
         initAction();
 //        getSiteTrackHis();
