@@ -1,6 +1,7 @@
 package com.boco.routesample;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -8,35 +9,34 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.baidu.mapapi.map.BaiduMap;
-import com.baidu.mapapi.map.MapStatusUpdate;
-import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
-import com.baidu.mapapi.map.MyLocationConfiguration;
 
-public class MainActivity extends AppCompatActivity {
+public class CreateRouteActivity extends AppCompatActivity {
 
-    private Context mContext = MainActivity.this;
+    private Context mContext = CreateRouteActivity.this;
 
     private MapView mMapView;
     private ImageView iv_locate;
 
-    private LocationListener myListener;
+    private NowLocationListener myListener;
     private LinearLayout ll_start;
     private TextView tv_start;
     private ImageView iv_start;
     private LinearLayout ll_submit;
+    private LinearLayout ll_key;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mMapView = findViewById(R.id.bmapView);
-        iv_locate = findViewById(R.id.iv_locate);
-        ll_start = findViewById(R.id.ll_start);
-        tv_start = findViewById(R.id.tv_start);
-        iv_start = findViewById(R.id.iv_start);
-        ll_submit = findViewById(R.id.submit);
+        mMapView = (MapView) findViewById(R.id.bmapView);
+        iv_locate = (ImageView) findViewById(R.id.iv_locate);
+        ll_start = (LinearLayout) findViewById(R.id.ll_start);
+        tv_start = (TextView) findViewById(R.id.tv_start);
+        iv_start = (ImageView) findViewById(R.id.iv_start);
+        ll_submit = (LinearLayout) findViewById(R.id.submit);
+        ll_key = (LinearLayout) findViewById(R.id.ll_key);
 
         initMap();
         initAction();
@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private void initMap() {
         mMapView.showZoomControls(false);
 
-        myListener = new LocationListener(mContext, mMapView);
+        myListener = new NowLocationListener(mContext, mMapView);
     }
 
     private void initAction() {
@@ -62,11 +62,28 @@ public class MainActivity extends AppCompatActivity {
                 if (tv_start.getText().toString().equals("开始")) {//开始
                     tv_start.setText("暂停");
                     iv_start.setImageResource(R.mipmap.ic_pause);
-
+                    myListener.startRoute();
                 } else {//暂停
                     tv_start.setText("开始");
                     iv_start.setImageResource(R.mipmap.ic_start);
+                    myListener.stopRoute();
                 }
+            }
+        });
+        ll_submit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                Intent intent = new Intent(CreateRouteActivity.this, PointActivity.class);
+//                startActivity(intent);
+                Intent intent = new Intent(CreateRouteActivity.this, HistoryRouteActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        ll_key.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                myListener.keyPoint();
             }
         });
     }
@@ -79,8 +96,16 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onStop() {
-        mMapView.onPause();
-        myListener.stopLocation();
+
         super.onStop();
     }
+
+    @Override
+    protected void onDestroy() {
+        mMapView.onPause();
+        myListener.stopLocation();
+        super.onDestroy();
+    }
+
+
 }

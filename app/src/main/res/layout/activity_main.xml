@@ -12,7 +12,7 @@
     <LinearLayout
         android:id="@+id/ll_bottom"
         android:layout_width="match_parent"
-        android:layout_height="36dp"
+        android:layout_height="46dp"
         android:orientation="horizontal"
         android:layout_alignParentBottom="true"
         android:background="#FFFFFF">
@@ -57,7 +57,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
-                android:text="开始"
+                android:text="提交"
                 android:textSize="13sp"/>
         </LinearLayout>
 
@@ -70,4 +70,24 @@
         android:layout_above="@id/ll_bottom"
         android:layout_marginBottom="20dp"
         android:src="@mipmap/ic_leader_maplocation"/>
+    <LinearLayout
+        android:id="@+id/ll_key"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:orientation="vertical"
+        android:background="@drawable/rectangle_bg"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="60dp"
+        android:layout_marginRight="20dp"
+        android:gravity="center">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:src="@mipmap/ic_key"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="10sp"
+            android:text="关键点"/>
+    </LinearLayout>
 </RelativeLayout>

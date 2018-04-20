@@ -18,7 +18,7 @@ import org.apache.commons.codec.binary.Base64;
 public class AES { 
 	private static String ivParameter = "0392039203920300";
 	
-    private static String KEY = "!BMDP@INTER*(-20180412L";
+    private static String KEY = "!BM2P@w1sxO*(-8L";
     /** 
       * 加密 
      *  
