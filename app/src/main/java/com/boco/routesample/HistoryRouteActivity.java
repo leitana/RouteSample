@@ -15,6 +15,9 @@ import com.boco.routesample.service.RetrofitCreateHelper;
 import com.boco.routesample.service.ServiceInterface;
 import com.jaredrummler.materialspinner.MaterialSpinner;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
@@ -33,6 +36,9 @@ public class HistoryRouteActivity extends AppCompatActivity {
     private MaterialSpinner standardSpinner;
     private MaterialSpinner distanceSpinner;
 
+    private List<String> standardList;
+    private List<String> distanceList;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,11 +48,39 @@ public class HistoryRouteActivity extends AppCompatActivity {
         standardSpinner = (MaterialSpinner) findViewById(R.id.sp_standard);
         distanceSpinner = (MaterialSpinner) findViewById(R.id.sp_distance);
         initMap();
-        initAction();
+        initView();
 //        getSiteTrackHis();
     }
 
-    private void initAction() {
+    private void initView() {
+        standardList = new ArrayList<>();
+        distanceList = new ArrayList<>();
+
+        standardList.add("标准轨迹");
+        standardList.add("非标准轨迹");
+        standardList.add("全部");
+
+        distanceList.add("全部");
+        distanceList.add("0.5km");
+        distanceList.add("1.0km");
+        distanceList.add("2.0km");
+
+        standardSpinner.setItems(standardList);
+        distanceSpinner.setItems(distanceList);
+
+        standardSpinner.setOnItemSelectedListener(new MaterialSpinner.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(MaterialSpinner view, int position, long id, Object item) {
+
+            }
+        });
+        distanceSpinner.setOnItemSelectedListener(new MaterialSpinner.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(MaterialSpinner view, int position, long id, Object item) {
+
+            }
+        });
+
         iv_locate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
