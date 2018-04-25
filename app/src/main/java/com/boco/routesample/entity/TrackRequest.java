@@ -14,6 +14,15 @@ public class TrackRequest extends CommMsgRequest implements Serializable{
     private String trackType;//轨迹类型 0=普通 1=标准 2=所有【普通，标准】
     private String distance;//距离
     private String resName;//资源名称
+    private String upSiteUserId;//上报用户id
+
+    public String getUpSiteUserId() {
+        return upSiteUserId;
+    }
+
+    public void setUpSiteUserId(String upSiteUserId) {
+        this.upSiteUserId = upSiteUserId;
+    }
 
     public String getLongitude() {
         return longitude;
