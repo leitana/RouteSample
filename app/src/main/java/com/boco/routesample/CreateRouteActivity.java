@@ -236,7 +236,6 @@ public class CreateRouteActivity extends AppCompatActivity {
                                 JSONObject jsonObject = JSONObject.parseObject(strResponse);
                                 String dataList = jsonObject.get("dataList").toString();
                                 trackInfoList = JSON.parseObject(dataList, new TypeReference<List<TrackInfo>>() {});
-
                             }
                         }
                     }

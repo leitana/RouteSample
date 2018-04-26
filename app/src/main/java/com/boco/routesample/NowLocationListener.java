@@ -74,7 +74,8 @@ public class NowLocationListener implements BDLocationListener, SensorEventListe
 
     MapStatus.Builder builder;
 
-    List<TrackPointInfo> tpList = new ArrayList<>();
+    List<TrackPointInfo> tpList = new ArrayList<>();//当前轨迹
+    List<TrackPointInfo> unFinshedtpList = new ArrayList<>();
 
     public NowLocationListener(Context context, MapView mMapView) {
         this.mMapView = mMapView;
@@ -205,6 +206,13 @@ public class NowLocationListener implements BDLocationListener, SensorEventListe
         trackPointInfo.setUploadDate(uploadDate);
         trackPointInfo.setUpSiteUserId("18380448172");
         tpList.add(trackPointInfo);
+    }
+
+    public void setUnfinshedRoute(List<TrackPointInfo> unFinshedtpList){
+        this.unFinshedtpList = unFinshedtpList;
+        if (unFinshedtpList.size() > 0) {
+            
+        }
     }
 
     public List<TrackPointInfo> getTpList(){
