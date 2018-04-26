@@ -25,6 +25,7 @@ import com.boco.routesample.service.ServiceInterface;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
@@ -64,7 +65,10 @@ public class CreateRouteActivity extends AppCompatActivity {
 
         initMap();
         initAction();
+        LatLng targetLatLng = new LatLng(30.655712, 104.12183);
+        myListener.setTargetLatLng(targetLatLng);
         myListener.Location();
+
         getSiteTrackUnfinish();
     }
 
@@ -138,7 +142,7 @@ public class CreateRouteActivity extends AppCompatActivity {
     private void reportSiteTrack(){
         tpList = myListener.getTpList();
         TrackInfo trackInfo = new TrackInfo();
-        trackInfo.setIsComplete("0");//是否完成轨迹上报0=未完成  1=完成
+        trackInfo.setIsComplete(myListener.isFinished());//是否完成轨迹上报0=未完成  1=完成
         trackInfo.setTrackId("888888");//轨迹id
         trackInfo.setTrackType("");//轨迹类型
         trackInfo.setBusinessType("");//业务类型
@@ -236,6 +240,29 @@ public class CreateRouteActivity extends AppCompatActivity {
                                 JSONObject jsonObject = JSONObject.parseObject(strResponse);
                                 String dataList = jsonObject.get("dataList").toString();
                                 trackInfoList = JSON.parseObject(dataList, new TypeReference<List<TrackInfo>>() {});
+                                myListener.setUnfinshedRoute(trackInfoList.get(0).getTpList());
+                                SweetAlertDialog sweetAlertDialog = new SweetAlertDialog(mContext, SweetAlertDialog.WARNING_TYPE);
+                                sweetAlertDialog.setTitleText("提示");
+                                sweetAlertDialog.setCancelText("删除");
+                                sweetAlertDialog.setConfirmText("继续");
+                                sweetAlertDialog.setContentText("还有未完成的轨迹，是否继续轨迹");
+                                //删除
+                                sweetAlertDialog.setCancelClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                                    @Override
+                                    public void onClick(SweetAlertDialog sweetAlertDialog) {
+                                        delTrack(trackInfoList.get(0).getUpSiteUserId(),
+                                                trackInfoList.get(0).getTrackId());
+                                        sweetAlertDialog.dismiss();
+                                    }
+                                });
+                                sweetAlertDialog.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                                    @Override
+                                    public void onClick(SweetAlertDialog sweetAlertDialog) {
+                                        myListener.continueUnfinishedRoute();
+                                        sweetAlertDialog.dismiss();
+                                    }
+                                });
+                                sweetAlertDialog.show();
                             }
                         }
                     }
@@ -243,6 +270,44 @@ public class CreateRouteActivity extends AppCompatActivity {
                     @Override
                     public void onError(Throwable e) {
                         tv_info.setText("未完成轨迹查询失败");
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+    }
+
+    private void delTrack(String upSiteUserId, String trackId) {
+        TrackRequest request = new TrackRequest();
+        request.setUpSiteUserId(upSiteUserId);
+        request.setTrackId(trackId);
+        tv_info.setText("正在删除未完成轨迹");
+        RetrofitCreateHelper.createApi(ServiceInterface.class, ServiceInterface.URL)
+                .delTrack(request)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<String>() {
+
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(String s) {
+                        CommMsgResponse commMsgResponse = JSON.parseObject(s, new TypeReference<CommMsgResponse>() {});
+                        if (commMsgResponse.isServiceFlag()) {
+                            tv_info.setText("轨迹删除成功");
+                        } else {
+                            tv_info.setText("轨迹删除失败");
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
                     }
 
                     @Override

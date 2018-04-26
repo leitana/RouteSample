@@ -18,6 +18,24 @@ public class TrackPointInfo extends BaseBo implements Serializable{
     private String fileId;
     private String remark;
     private String upSiteUserId;
+    private String longitude;
+    private String latitude;
+
+    public String getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(String longitude) {
+        this.longitude = longitude;
+    }
+
+    public String getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(String latitude) {
+        this.latitude = latitude;
+    }
 
     public String getId() {
         return id;

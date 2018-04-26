@@ -72,10 +72,12 @@ public class NowLocationListener implements BDLocationListener, SensorEventListe
 
     List<LatLng> keyPoints = new ArrayList<>();//关键点集合
 
+    LatLng targetLatLng;//目标点
+
     MapStatus.Builder builder;
 
     List<TrackPointInfo> tpList = new ArrayList<>();//当前轨迹
-    List<TrackPointInfo> unFinshedtpList = new ArrayList<>();
+    List<TrackPointInfo> unFinshedtpList = new ArrayList<>();//未完成轨迹
 
     public NowLocationListener(Context context, MapView mMapView) {
         this.mMapView = mMapView;
@@ -156,6 +158,10 @@ public class NowLocationListener implements BDLocationListener, SensorEventListe
         mLocClient.stop(); //停止定位
     }
 
+    public void setTargetLatLng(LatLng targetLatLng){
+        this.targetLatLng = targetLatLng;
+    }
+
     public void keyPoint(){
         Calendar selectedDate = Calendar.getInstance();//系统当前时间
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -192,7 +198,7 @@ public class NowLocationListener implements BDLocationListener, SensorEventListe
         tpList.add(trackPointInfo);
     }
 
-    //提交
+    //提交 返回是否完成轨迹上报0=未完成  1=完成
     public void submitPoint() {
         isRoute = false;
         Calendar selectedDate = Calendar.getInstance();//系统当前时间
@@ -206,12 +212,68 @@ public class NowLocationListener implements BDLocationListener, SensorEventListe
         trackPointInfo.setUploadDate(uploadDate);
         trackPointInfo.setUpSiteUserId("18380448172");
         tpList.add(trackPointInfo);
+
+    }
+
+    public String isFinished() {
+        LatLng endLatLng = new LatLng(mCurrentLat, mCurrentLon);
+        if (DistanceUtil.getDistance(endLatLng, targetLatLng) < 50) {//50m以内
+            return "1";
+        } else {
+            return "0";
+        }
     }
 
     public void setUnfinshedRoute(List<TrackPointInfo> unFinshedtpList){
         this.unFinshedtpList = unFinshedtpList;
+        List<LatLng> unFinishedPoints = new ArrayList<LatLng>();//位置点集合
         if (unFinshedtpList.size() > 0) {
-            
+            for (int i = 0; i < unFinshedtpList.size(); i++) {
+                TrackPointInfo trackPointInfo = unFinshedtpList.get(i);
+                LatLng latLng = new LatLng(Double.parseDouble(trackPointInfo.getLatitude()),
+                        Double.parseDouble(trackPointInfo.getLongitude()));
+                unFinishedPoints.add(latLng);
+                if (i == 0){//起点
+                    //标记起点图层位置
+                    MarkerOptions oStart = new MarkerOptions();// 地图标记覆盖物参数配置类
+                    oStart.position(latLng);// 覆盖物位置点，第一个点为起点
+                    oStart.icon(startBD);// 设置覆盖物图片
+                    mBaiduMap.addOverlay(oStart); // 在地图上添加此图层
+                } else if (i == unFinshedtpList.size() - 1) {
+                    //终点
+                    MarkerOptions target = new MarkerOptions();// 地图标记覆盖物参数配置类
+                    target.position(latLng);// 覆盖物位置点，第一个点为起点
+                    target.icon(finishBD);// 设置覆盖物图片
+                    mBaiduMap.addOverlay(target); // 在地图上添加此图层
+                }
+
+                if (trackPointInfo.getPointType().equals("3")){//关键点
+                    MarkerOptions markerOptions = new MarkerOptions();// 地图标记覆盖物参数配置类
+                    markerOptions.position(latLng);// 覆盖物位置点，第一个点为起点
+                    markerOptions.icon(keyPointBD);// 设置覆盖物图片
+                    mBaiduMap.addOverlay(markerOptions); // 在地图上添加此图层
+                }
+                unFinishedPoints.add(latLng);
+                OverlayOptions ooPolyline = new PolylineOptions().width(13).color(0xAAFF0000).points(unFinishedPoints);
+                mPolyline = (Polyline) mBaiduMap.addOverlay(ooPolyline);
+            }
+
+        }
+    }
+
+    public void continueUnfinishedRoute(){
+        if (unFinshedtpList.size() > 0) {
+            for (int i = 0; i < unFinshedtpList.size(); i++) {
+                TrackPointInfo unFishedTrack = unFinshedtpList.get(i);
+                if (i < unFinshedtpList.size() - 1) {
+                    tpList.add(unFishedTrack);
+                } else {
+                    unFishedTrack.setPointType("6");//未完成的终点继续上报当成暂停点
+                    tpList.add(unFishedTrack);
+                }
+                LatLng point = new LatLng(Double.parseDouble(unFishedTrack.getLatitude()), Double.parseDouble(unFishedTrack.getLongitude()));
+                points.add(point);
+            }
         }
     }
 
@@ -244,26 +306,41 @@ public class NowLocationListener implements BDLocationListener, SensorEventListe
                 locateAndZoom(location, ll);
 
                 //标记起点图层位置
-                MarkerOptions oStart = new MarkerOptions();// 地图标记覆盖物参数配置类
-                oStart.position(points.get(0));// 覆盖物位置点，第一个点为起点
-                oStart.icon(startBD);// 设置覆盖物图片
-                mBaiduMap.addOverlay(oStart); // 在地图上添加此图层
+                if (tpList.size() == 0) {
+                    MarkerOptions oStart = new MarkerOptions();// 地图标记覆盖物参数配置类
+                    oStart.position(points.get(0));// 覆盖物位置点，第一个点为起点
+                    oStart.icon(startBD);// 设置覆盖物图片
+                    mBaiduMap.addOverlay(oStart); // 在地图上添加此图层
+                    TrackPointInfo trackPointInfo = new TrackPointInfo();
+                    trackPointInfo.setTrackId("888888");//轨迹id
+                    trackPointInfo.setLongitudeBaidu(last.longitude + "");
+                    trackPointInfo.setLatitudeBaidu(last.latitude + "");
+                    trackPointInfo.setPointType("1");//起点
+                    trackPointInfo.setUploadDate(location.getTime());
+                    trackPointInfo.setUpSiteUserId("18380448172");
+                    tpList.add(trackPointInfo);
+                } else {
+                    TrackPointInfo trackPointInfo = new TrackPointInfo();
+                    trackPointInfo.setTrackId("888888");//轨迹id
+                    trackPointInfo.setLongitudeBaidu(last.longitude + "");
+                    trackPointInfo.setLatitudeBaidu(last.latitude + "");
+                    trackPointInfo.setPointType("5");//起点
+                    trackPointInfo.setUploadDate(location.getTime());
+                    trackPointInfo.setUpSiteUserId("18380448172");
+                    tpList.add(trackPointInfo);
+                }
 
                 //标记终点位置
-                MarkerOptions target = new MarkerOptions();// 地图标记覆盖物参数配置类
-                LatLng targetLatLng = new LatLng(30.655712, 104.12183);
-                target.position(targetLatLng);// 覆盖物位置点，第一个点为起点
-                target.icon(finishBD);// 设置覆盖物图片
-                mBaiduMap.addOverlay(target); // 在地图上添加此图层
+                if (targetLatLng != null) {
+                    MarkerOptions target = new MarkerOptions();// 地图标记覆盖物参数配置类
+//                    LatLng targetLatLng = new LatLng(30.655712, 104.12183);
+                    target.position(targetLatLng);// 覆盖物位置点，第一个点为起点
+                    target.icon(finishBD);// 设置覆盖物图片
+                    mBaiduMap.addOverlay(target); // 在地图上添加此图层
+                }
 
-                TrackPointInfo trackPointInfo = new TrackPointInfo();
-                trackPointInfo.setTrackId("888888");//轨迹id
-                trackPointInfo.setLongitudeBaidu(last.longitude + "");
-                trackPointInfo.setLatitudeBaidu(last.latitude + "");
-                trackPointInfo.setPointType("1");//先默认全部为普通点
-                trackPointInfo.setUploadDate(location.getTime());
-                trackPointInfo.setUpSiteUserId("18380448172");
-                tpList.add(trackPointInfo);
+
+
 
 //                progressBarRl.setVisibility(View.GONE);
 
@@ -304,11 +381,14 @@ public class NowLocationListener implements BDLocationListener, SensorEventListe
             mBaiduMap.addOverlay(oStart);
 
             //终点位置重新绘画
-            MarkerOptions target = new MarkerOptions();// 地图标记覆盖物参数配置类
-            LatLng targetLatLng = new LatLng(30.655712, 104.12183);
-            target.position(targetLatLng);// 覆盖物位置点，第一个点为起点
-            target.icon(finishBD);// 设置覆盖物图片
-            mBaiduMap.addOverlay(target); // 在地图上添加此图层
+            //标记终点位置
+            if (targetLatLng != null) {
+                MarkerOptions target = new MarkerOptions();// 地图标记覆盖物参数配置类
+//                    LatLng targetLatLng = new LatLng(30.655712, 104.12183);
+                target.position(targetLatLng);// 覆盖物位置点，第一个点为起点
+                target.icon(finishBD);// 设置覆盖物图片
+                mBaiduMap.addOverlay(target); // 在地图上添加此图层
+            }
 
             //关键点图层也被清除，重新绘画
             for (LatLng keyPoint : keyPoints) {
@@ -351,7 +431,7 @@ public class NowLocationListener implements BDLocationListener, SensorEventListe
      * gps的精度半径一般是10-50米
      */
     private LatLng getMostAccuracyLocation(BDLocation location) {
-
+        List<LatLng> points = new ArrayList<LatLng>();
         if (location.getRadius() > 40) {//gps位置精度大于40米的点直接弃用
             return null;
         }

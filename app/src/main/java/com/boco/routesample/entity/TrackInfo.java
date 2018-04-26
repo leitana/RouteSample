@@ -37,7 +37,148 @@ public class TrackInfo extends CommMsgRequest implements Serializable {
     private String targetLongitudeBaidu;
     private String targetLatitudeBaidu;
     private String distance;
+    private String opUserName;
+    private String opUserId;
+    private String opTime;
+    private String callTime;
+    private String imei;
+    private String phoneVersion;
+    private String isAuditor;
+    private String auditorDate;
+
+    private String startLongitude;
+    private String startLatitude;
+    private String endLongitude;
+    private String endLatitude;
+    private String targetLongitude;
+    private String targetLatitude;
+
     private List<TrackPointInfo> tpList;
+
+    @Override
+    public String getOpUserName() {
+        return opUserName;
+    }
+
+    @Override
+    public void setOpUserName(String opUserName) {
+        this.opUserName = opUserName;
+    }
+
+    @Override
+    public String getOpUserId() {
+        return opUserId;
+    }
+
+    @Override
+    public void setOpUserId(String opUserId) {
+        this.opUserId = opUserId;
+    }
+
+    @Override
+    public String getOpTime() {
+        return opTime;
+    }
+
+    @Override
+    public void setOpTime(String opTime) {
+        this.opTime = opTime;
+    }
+
+    @Override
+    public String getCallTime() {
+        return callTime;
+    }
+
+    @Override
+    public void setCallTime(String callTime) {
+        this.callTime = callTime;
+    }
+
+    @Override
+    public String getImei() {
+        return imei;
+    }
+
+    @Override
+    public void setImei(String imei) {
+        this.imei = imei;
+    }
+
+    @Override
+    public String getPhoneVersion() {
+        return phoneVersion;
+    }
+
+    @Override
+    public void setPhoneVersion(String phoneVersion) {
+        this.phoneVersion = phoneVersion;
+    }
+
+    public String getIsAuditor() {
+        return isAuditor;
+    }
+
+    public void setIsAuditor(String isAuditor) {
+        this.isAuditor = isAuditor;
+    }
+
+    public String getAuditorDate() {
+        return auditorDate;
+    }
+
+    public void setAuditorDate(String auditorDate) {
+        this.auditorDate = auditorDate;
+    }
+
+    public String getStartLongitude() {
+        return startLongitude;
+    }
+
+    public void setStartLongitude(String startLongitude) {
+        this.startLongitude = startLongitude;
+    }
+
+    public String getStartLatitude() {
+        return startLatitude;
+    }
+
+    public void setStartLatitude(String startLatitude) {
+        this.startLatitude = startLatitude;
+    }
+
+    public String getEndLongitude() {
+        return endLongitude;
+    }
+
+    public void setEndLongitude(String endLongitude) {
+        this.endLongitude = endLongitude;
+    }
+
+    public String getEndLatitude() {
+        return endLatitude;
+    }
+
+    public void setEndLatitude(String endLatitude) {
+        this.endLatitude = endLatitude;
+    }
+
+    public String getTargetLongitude() {
+        return targetLongitude;
+    }
+
+    public void setTargetLongitude(String targetLongitude) {
+        this.targetLongitude = targetLongitude;
+    }
+
+    public String getTargetLatitude() {
+        return targetLatitude;
+    }
+
+    public void setTargetLatitude(String targetLatitude) {
+        this.targetLatitude = targetLatitude;
+    }
+
 
     public String getId() {
         return id;
