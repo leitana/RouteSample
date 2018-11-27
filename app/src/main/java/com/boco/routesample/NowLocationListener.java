@@ -63,6 +63,7 @@ public class NowLocationListener implements BDLocationListener, SensorEventListe
     BitmapDescriptor keyPointBD = BitmapDescriptorFactory.fromResource(R.mipmap.ic_key_point
     );
 
+
     List<LatLng> points = new ArrayList<LatLng>();//位置点集合
     Polyline mPolyline;//运动轨迹图层
     LatLng last = new LatLng(0, 0);//上一个定位点
