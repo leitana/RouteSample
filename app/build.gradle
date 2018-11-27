@@ -44,6 +44,8 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+    compile project(':SharedPreferences_lib')
+    compile 'com.github.f0ris.sweetalert:library:1.5.1'
     compile 'com.zhihu.android:matisse:0.4.3'
     implementation files('libs/BaiduLBS_Android.jar')
     implementation files('libs/commons-codec-1.11.jar')
@@ -59,4 +61,5 @@ dependencies {
     compile 'com.squareup.okhttp3:logging-interceptor:3.8.0'
     implementation files('libs/bmdp-interface-core.jar')
     compile 'com.jaredrummler:material-spinner:1.1.0'
+    implementation files('libs/fastjson-1.1.32.jar')
 }

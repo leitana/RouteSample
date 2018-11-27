@@ -1,6 +1,5 @@
 package com.boco.routesample.utils;
 
-import com.boco.bmdp.core.pojo.common.CommMsgResponse;
 import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
 
@@ -38,8 +37,14 @@ public class JsonResponseBodyConverter<T> implements Converter<ResponseBody, T> 
 //        Log.i("xiaozhang", "解密的服务器数据：" + result);
 //        PageBean pageBean = mGson.fromJson(result, PageBean.class);
 //        return (T) pageBean;
+
+//        String decrypt = AES.decrypt(response);
+//        return (T) mGson.fromJson(decrypt, CommMsgResponse.class);
+
+//        JSONObject jsonObject = JSONObject.parseObject(decrypt);
+//        String str = jsonObject.get("dataList").toString();
         String decrypt = AES.decrypt(response);
-        return (T) mGson.fromJson(decrypt, CommMsgResponse.class);
+        return (T) decrypt;
     }
 
 }

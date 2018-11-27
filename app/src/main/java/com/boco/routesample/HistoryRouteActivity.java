@@ -9,7 +9,6 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.baidu.mapapi.map.MapView;
-import com.boco.bmdp.core.pojo.common.CommMsgResponse;
 import com.boco.routesample.entity.TrackRequest;
 import com.boco.routesample.service.RetrofitCreateHelper;
 import com.boco.routesample.service.ServiceInterface;
@@ -103,7 +102,7 @@ public class HistoryRouteActivity extends AppCompatActivity {
                 .getSiteTrackHis(request)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<CommMsgResponse>() {
+                .subscribe(new Observer<String>() {
 
                     @Override
                     public void onSubscribe(Disposable d) {
@@ -111,7 +110,7 @@ public class HistoryRouteActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onNext(CommMsgResponse commMsgResponse) {
+                    public void onNext(String commMsgResponse) {
                         Log.d("---------",commMsgResponse.toString());
                     }
 

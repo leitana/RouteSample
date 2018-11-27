@@ -25,8 +25,11 @@ import com.baidu.mapapi.map.Polyline;
 import com.baidu.mapapi.map.PolylineOptions;
 import com.baidu.mapapi.model.LatLng;
 import com.baidu.mapapi.utils.DistanceUtil;
+import com.boco.routesample.entity.TrackPointInfo;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import static android.content.Context.SENSOR_SERVICE;
@@ -70,7 +73,12 @@ public class NowLocationListener implements BDLocationListener, SensorEventListe
 
     List<LatLng> keyPoints = new ArrayList<>();//关键点集合
 
+    LatLng targetLatLng;//目标点
+
     MapStatus.Builder builder;
+
+    List<TrackPointInfo> tpList = new ArrayList<>();//当前轨迹
+    List<TrackPointInfo> unFinshedtpList = new ArrayList<>();//未完成轨迹
 
     public NowLocationListener(Context context, MapView mMapView) {
         this.mMapView = mMapView;
@@ -141,9 +149,9 @@ public class NowLocationListener implements BDLocationListener, SensorEventListe
         isRoute = true;
     }
 
-    public void stopRoute() {
-        isRoute = false;
-    }
+//    public void stopRoute() {
+//        isRoute = false;
+//    }
 
     public void stopLocation() {
         mSensorManager.unregisterListener(this);
@@ -151,14 +159,129 @@ public class NowLocationListener implements BDLocationListener, SensorEventListe
         mLocClient.stop(); //停止定位
     }
 
+    public void setTargetLatLng(LatLng targetLatLng){
+        this.targetLatLng = targetLatLng;
+    }
+
     public void keyPoint(){
+        Calendar selectedDate = Calendar.getInstance();//系统当前时间
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String uploadDate = format.format(selectedDate.getTime());
+        TrackPointInfo trackPointInfo = new TrackPointInfo();
+        trackPointInfo.setTrackId("888888");//轨迹id
+        trackPointInfo.setLongitudeBaidu(mCurrentLon + "");
+        trackPointInfo.setLatitudeBaidu(mCurrentLat + "");
+        trackPointInfo.setPointType("3");
+        trackPointInfo.setUploadDate(uploadDate);
+        trackPointInfo.setUpSiteUserId("18380448172");
+        tpList.add(trackPointInfo);
         LatLng latLng = new LatLng(mCurrentLat, mCurrentLon);
         keyPoints.add(latLng);
         MarkerOptions keyPoint = new MarkerOptions();// 地图标记覆盖物参数配置类
-        keyPoint.position(latLng);// 覆盖物位置点，第一个点为起点
+        keyPoint.position(latLng);// 覆盖物位置点
         keyPoint.icon(keyPointBD);// 设置覆盖物图片
         mBaiduMap.addOverlay(keyPoint); // 在地图上添加此图层
     }
+
+    //暂停点
+    public void pausePoint() {
+        isRoute = false;
+        Calendar selectedDate = Calendar.getInstance();//系统当前时间
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String uploadDate = format.format(selectedDate.getTime());
+        TrackPointInfo trackPointInfo = new TrackPointInfo();
+        trackPointInfo.setTrackId("888888");//轨迹id
+        trackPointInfo.setLongitudeBaidu(mCurrentLon + "");
+        trackPointInfo.setLatitudeBaidu(mCurrentLat + "");
+        trackPointInfo.setPointType("6");
+        trackPointInfo.setUploadDate(uploadDate);
+        trackPointInfo.setUpSiteUserId("18380448172");
+        tpList.add(trackPointInfo);
+    }
+
+    //提交 返回是否完成轨迹上报0=未完成  1=完成
+    public void submitPoint() {
+        isRoute = false;
+        Calendar selectedDate = Calendar.getInstance();//系统当前时间
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String uploadDate = format.format(selectedDate.getTime());
+        TrackPointInfo trackPointInfo = new TrackPointInfo();
+        trackPointInfo.setTrackId("888888");//轨迹id
+        trackPointInfo.setLongitudeBaidu(mCurrentLon + "");
+        trackPointInfo.setLatitudeBaidu(mCurrentLat + "");
+        trackPointInfo.setPointType("2");
+        trackPointInfo.setUploadDate(uploadDate);
+        trackPointInfo.setUpSiteUserId("18380448172");
+        tpList.add(trackPointInfo);
+
+    }
+
+    public String isFinished() {
+        LatLng endLatLng = new LatLng(mCurrentLat, mCurrentLon);
+        if (DistanceUtil.getDistance(endLatLng, targetLatLng) < 50) {//50m以内
+            return "1";
+        } else {
+            return "0";
+        }
+    }
+
+    public void setUnfinshedRoute(List<TrackPointInfo> unFinshedtpList){
+        this.unFinshedtpList = unFinshedtpList;
+        List<LatLng> unFinishedPoints = new ArrayList<LatLng>();//位置点集合
+        if (unFinshedtpList.size() > 0) {
+            for (int i = 0; i < unFinshedtpList.size(); i++) {
+                TrackPointInfo trackPointInfo = unFinshedtpList.get(i);
+                LatLng latLng = new LatLng(Double.parseDouble(trackPointInfo.getLatitude()),
+                        Double.parseDouble(trackPointInfo.getLongitude()));
+                unFinishedPoints.add(latLng);
+                if (i == 0){//起点
+                    //标记起点图层位置
+                    MarkerOptions oStart = new MarkerOptions();// 地图标记覆盖物参数配置类
+                    oStart.position(latLng);// 覆盖物位置点，第一个点为起点
+                    oStart.icon(startBD);// 设置覆盖物图片
+                    mBaiduMap.addOverlay(oStart); // 在地图上添加此图层
+                } else if (i == unFinshedtpList.size() - 1) {
+                    //终点
+                    MarkerOptions target = new MarkerOptions();// 地图标记覆盖物参数配置类
+                    target.position(latLng);// 覆盖物位置点，第一个点为起点
+                    target.icon(finishBD);// 设置覆盖物图片
+                    mBaiduMap.addOverlay(target); // 在地图上添加此图层
+                }
+
+                if (trackPointInfo.getPointType().equals("3")){//关键点
+                    MarkerOptions markerOptions = new MarkerOptions();// 地图标记覆盖物参数配置类
+                    markerOptions.position(latLng);// 覆盖物位置点，第一个点为起点
+                    markerOptions.icon(keyPointBD);// 设置覆盖物图片
+                    mBaiduMap.addOverlay(markerOptions); // 在地图上添加此图层
+                }
+                unFinishedPoints.add(latLng);
+                OverlayOptions ooPolyline = new PolylineOptions().width(13).color(0xAAFF0000).points(unFinishedPoints);
+                mPolyline = (Polyline) mBaiduMap.addOverlay(ooPolyline);
+            }
+
+        }
+    }
+
+    public void continueUnfinishedRoute(){
+        if (unFinshedtpList.size() > 0) {
+            for (int i = 0; i < unFinshedtpList.size(); i++) {
+                TrackPointInfo unFishedTrack = unFinshedtpList.get(i);
+                if (i < unFinshedtpList.size() - 1) {
+                    tpList.add(unFishedTrack);
+                } else {
+                    unFishedTrack.setPointType("6");//未完成的终点继续上报当成暂停点
+                    tpList.add(unFishedTrack);
+                }
+                LatLng point = new LatLng(Double.parseDouble(unFishedTrack.getLatitude()), Double.parseDouble(unFishedTrack.getLongitude()));
+                points.add(point);
+            }
+        }
+    }
+
+    public List<TrackPointInfo> getTpList(){
+        return tpList;
+    }
+
 
     @Override
     public void onReceiveLocation(BDLocation location) {
@@ -166,6 +289,7 @@ public class NowLocationListener implements BDLocationListener, SensorEventListe
 //        if (location.getLocType() == BDLocation.TypeGpsLocation) {
 
 //            info.setText("GPS信号弱，请稍后...");
+
         if (isRoute) {
             if (isFirstLoc) {//首次定位
                 //第一个点很重要，决定了轨迹的效果，gps刚开始返回的一些点精度不高，尽量选一个精度相对较高的起始点
@@ -183,10 +307,41 @@ public class NowLocationListener implements BDLocationListener, SensorEventListe
                 locateAndZoom(location, ll);
 
                 //标记起点图层位置
-                MarkerOptions oStart = new MarkerOptions();// 地图标记覆盖物参数配置类
-                oStart.position(points.get(0));// 覆盖物位置点，第一个点为起点
-                oStart.icon(startBD);// 设置覆盖物图片
-                mBaiduMap.addOverlay(oStart); // 在地图上添加此图层
+                if (tpList.size() == 0) {
+                    MarkerOptions oStart = new MarkerOptions();// 地图标记覆盖物参数配置类
+                    oStart.position(points.get(0));// 覆盖物位置点，第一个点为起点
+                    oStart.icon(startBD);// 设置覆盖物图片
+                    mBaiduMap.addOverlay(oStart); // 在地图上添加此图层
+                    TrackPointInfo trackPointInfo = new TrackPointInfo();
+                    trackPointInfo.setTrackId("888888");//轨迹id
+                    trackPointInfo.setLongitudeBaidu(last.longitude + "");
+                    trackPointInfo.setLatitudeBaidu(last.latitude + "");
+                    trackPointInfo.setPointType("1");//起点
+                    trackPointInfo.setUploadDate(location.getTime());
+                    trackPointInfo.setUpSiteUserId("18380448172");
+                    tpList.add(trackPointInfo);
+                } else {
+                    TrackPointInfo trackPointInfo = new TrackPointInfo();
+                    trackPointInfo.setTrackId("888888");//轨迹id
+                    trackPointInfo.setLongitudeBaidu(last.longitude + "");
+                    trackPointInfo.setLatitudeBaidu(last.latitude + "");
+                    trackPointInfo.setPointType("5");//起点
+                    trackPointInfo.setUploadDate(location.getTime());
+                    trackPointInfo.setUpSiteUserId("18380448172");
+                    tpList.add(trackPointInfo);
+                }
+
+                //标记终点位置
+                if (targetLatLng != null) {
+                    MarkerOptions target = new MarkerOptions();// 地图标记覆盖物参数配置类
+//                    LatLng targetLatLng = new LatLng(30.655712, 104.12183);
+                    target.position(targetLatLng);// 覆盖物位置点，第一个点为起点
+                    target.icon(finishBD);// 设置覆盖物图片
+                    mBaiduMap.addOverlay(target); // 在地图上添加此图层
+                }
+
+
+
 
 //                progressBarRl.setVisibility(View.GONE);
 
@@ -196,13 +351,23 @@ public class NowLocationListener implements BDLocationListener, SensorEventListe
             //从第二个点开始
             LatLng ll = new LatLng(location.getLatitude(), location.getLongitude());
             //sdk回调gps位置的频率是1秒1个，位置点太近动态画在图上不是很明显，可以设置点之间距离大于为5米才添加到集合中
-            if (DistanceUtil.getDistance(last, ll) < 5) {
+            if (DistanceUtil.getDistance(last, ll) < 50) {
+                locateAndZoom(location, ll);
                 return;
             }
 
             points.add(ll);//如果要运动完成后画整个轨迹，位置点都在这个集合中
 
             last = ll;
+
+            TrackPointInfo trackPointInfo = new TrackPointInfo();
+            trackPointInfo.setTrackId("888888");//轨迹id
+            trackPointInfo.setLongitudeBaidu(last.longitude + "");
+            trackPointInfo.setLatitudeBaidu(last.latitude + "");
+            trackPointInfo.setPointType("5");
+            trackPointInfo.setUploadDate(location.getTime());
+            trackPointInfo.setUpSiteUserId("18380448172");
+            tpList.add(trackPointInfo);
 
             //显示当前定位点，缩放地图
             locateAndZoom(location, ll);
@@ -215,6 +380,16 @@ public class NowLocationListener implements BDLocationListener, SensorEventListe
             oStart.position(points.get(0));
             oStart.icon(startBD);
             mBaiduMap.addOverlay(oStart);
+
+            //终点位置重新绘画
+            //标记终点位置
+            if (targetLatLng != null) {
+                MarkerOptions target = new MarkerOptions();// 地图标记覆盖物参数配置类
+//                    LatLng targetLatLng = new LatLng(30.655712, 104.12183);
+                target.position(targetLatLng);// 覆盖物位置点，第一个点为起点
+                target.icon(finishBD);// 设置覆盖物图片
+                mBaiduMap.addOverlay(target); // 在地图上添加此图层
+            }
 
             //关键点图层也被清除，重新绘画
             for (LatLng keyPoint : keyPoints) {
@@ -257,7 +432,7 @@ public class NowLocationListener implements BDLocationListener, SensorEventListe
      * gps的精度半径一般是10-50米
      */
     private LatLng getMostAccuracyLocation(BDLocation location) {
-
+        List<LatLng> points = new ArrayList<LatLng>();
         if (location.getRadius() > 40) {//gps位置精度大于40米的点直接弃用
             return null;
         }
@@ -299,4 +474,29 @@ public class NowLocationListener implements BDLocationListener, SensorEventListe
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
     }
+
+    /**
+     * 判断两个点的距离是否大于50
+     * @param start
+     * @param end
+     * @return
+     */
+//    public boolean getDistance(LatLng start,LatLng end){
+//        double lat1 = (Math.PI/180)*start.latitude;
+//        double lat2 = (Math.PI/180)*end.latitude;
+//
+//        double lon1 = (Math.PI/180)*start.longitude;
+//        double lon2 = (Math.PI/180)*end.longitude;
+//
+//        //地球半径
+//        double R = 6371;
+//
+//        //两点间距离 km，如果想要米的话，结果*1000
+//        double d =  Math.acos(Math.sin(lat1)*Math.sin(lat2)+Math.cos(lat1)*Math.cos(lat2)*Math.cos(lon2-lon1))*R;
+//        if (d * 1000 > 50) {
+//            return true;
+//        } else {
+//            return false;
+//        }
+//    }
 }
